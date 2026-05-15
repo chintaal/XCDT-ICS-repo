@@ -1,20 +1,22 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 
 /**
- * Returns the current epoch ms, ticking every `intervalMs`.
- * Pure during render (reads through React's `useSyncExternalStore`),
- * which avoids the React-19 `react-hooks/purity` lint rule that flags
- * direct `Date.now()` calls during render.
+ * Current epoch ms, advancing every `intervalMs`.
+ *
+ * Implemented with `useState` + `useEffect` instead of `useSyncExternalStore`:
+ * - `getSnapshot: () => Date.now()` is invalid (new value every read → infinite renders).
+ * - A ticking external store must still align `getServerSnapshot` with the client in
+ *   Next.js SSR, or hydration recovery can thrash updates in React 19.
  */
 export function useTickingNow(intervalMs: number = 1000): number {
-  return useSyncExternalStore(
-    (notify) => {
-      const id = setInterval(notify, intervalMs);
-      return () => clearInterval(id);
-    },
-    () => Date.now(),
-    () => 0, // SSR snapshot
-  );
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+
+  return now;
 }
