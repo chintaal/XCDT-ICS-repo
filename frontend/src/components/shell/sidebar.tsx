@@ -12,6 +12,7 @@ import {
   Settings,
   Shield,
   Sparkles,
+  TestTube2,
   Waves,
 } from "lucide-react";
 import { Logo } from "@/components/ui/logo";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/",             label: "Live Operations", icon: Activity,     hint: "Realtime detection" },
   { href: "/replay-dashboard", label: "Methodology replay", icon: LayoutDashboard, hint: "Streamlit parity · XAI" },
+  { href: "/attack-strip",   label: "Attack strip lab",  icon: TestTube2,    hint: "validate_attack_injection" },
   { href: "/incidents",    label: "Incidents",       icon: AlertOctagon, hint: "Forensic intelligence" },
   { href: "/sensor-graph", label: "Sensor Graph",    icon: GitBranch,    hint: "Process topology" },
   { href: "/datasets",     label: "Datasets",        icon: Database,     hint: "Models & assets" },

@@ -101,6 +101,49 @@ export interface AttackInjectRequest {
   duration_ticks?: number;
 }
 
+export interface AttackValidationSeriesRequest {
+  dataset?: string;
+  attack_type?: "freeze" | "offset" | "noise";
+  sensor?: string | null;
+  n_rows?: number;
+  attack_start?: number;
+  attack_end?: number;
+}
+
+export interface AttackValidationSeries {
+  dataset: string;
+  attack_type: string;
+  attack_name: string;
+  target_sensor: string;
+  target_idx: number;
+  magnitude: number;
+  ticks: number;
+  n_rows: number;
+  attack_start: number;
+  attack_end: number;
+  window_len: number;
+  stride: number;
+  threshold: number;
+  alpha: number;
+  raw_mean: number;
+  raw_std: number;
+  row_index: number[];
+  raw_clean: number[];
+  raw_attacked: number[];
+  window_center: number[];
+  mahalanobis: number[];
+  collapse_raw: number[];
+  deviation_raw: number[];
+  collapse_weighted: number[];
+  deviation_weighted: number[];
+  fused: number[];
+  top_sensors_per_window: SensorAttribution[][];
+  attribution_method: string[];
+  detected: boolean;
+  peak_fused: number;
+  peak_window_center: number;
+}
+
 export interface IncidentResponse {
   id: number;
   dataset: string;

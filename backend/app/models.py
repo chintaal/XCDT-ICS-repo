@@ -10,7 +10,7 @@ import json
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sqlalchemy import DateTime, Float, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column
 
@@ -160,6 +160,25 @@ class AttackInjectRequest(BaseModel):
         if v not in allowed:
             raise ValueError(f"attack_type must be one of {allowed}")
         return v
+
+
+class AttackValidationSeriesRequest(BaseModel):
+    """Request body for ML attack-strip simulation (validate_attack_injection parity)."""
+
+    dataset: str = "SWaT"
+    attack_type: str = Field(default="offset", pattern="^(freeze|offset|noise)$")
+    sensor: Optional[str] = None
+    n_rows: int = Field(default=500, ge=50, le=5000)
+    attack_start: int = Field(default=150, ge=0)
+    attack_end: int = Field(default=350, ge=2)
+
+    @model_validator(mode="after")
+    def _bounds(self) -> "AttackValidationSeriesRequest":
+        if self.attack_start >= self.attack_end:
+            raise ValueError("attack_start must be less than attack_end")
+        if self.attack_end > self.n_rows:
+            raise ValueError("attack_end must be less than or equal to n_rows")
+        return self
 
 
 class ThresholdUpdateRequest(BaseModel):

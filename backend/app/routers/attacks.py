@@ -6,14 +6,22 @@ Endpoints to inject and clear simulated attacks for red-team / sandbox mode.
 
 from __future__ import annotations
 
+import asyncio
+import json
+import logging
+import os
+import subprocess
+from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter, HTTPException
 
+from app.config import settings
 from app.inference_service import inference_service
-from app.models import AttackInjectRequest, AttackTypeInfo
+from app.models import AttackInjectRequest, AttackTypeInfo, AttackValidationSeriesRequest
 
 router = APIRouter(prefix="/api/attacks", tags=["attacks"])
+log = logging.getLogger("routers.attacks")
 
 ATTACK_TYPES = [
     AttackTypeInfo(
@@ -102,3 +110,69 @@ async def attack_status() -> dict:
     except Exception:
         pass
     return state
+
+
+def _run_attack_validation_subprocess(req: AttackValidationSeriesRequest) -> dict:
+    ml_src = Path(settings.ml_src)
+    py = Path(settings.ml_python)
+    script = ml_src / "export_attack_validation_json.py"
+    if not script.is_file():
+        raise HTTPException(
+            status_code=503,
+            detail=f"ML export script missing: {script}",
+        )
+    cmd: list[str] = [
+        str(py),
+        str(script),
+        "--dataset",
+        req.dataset,
+        "--attack",
+        req.attack_type,
+        "--n-rows",
+        str(req.n_rows),
+        "--attack-start",
+        str(req.attack_start),
+        "--attack-end",
+        str(req.attack_end),
+    ]
+    if req.sensor:
+        cmd.extend(["--sensor", req.sensor])
+    assets = Path(settings.ml_assets)
+    if assets.is_dir():
+        cmd.extend(["--ml-assets", str(assets)])
+
+    log.info("Running attack validation export: %s", " ".join(cmd))
+    proc = subprocess.run(
+        cmd,
+        cwd=str(ml_src),
+        capture_output=True,
+        text=True,
+        timeout=600,
+        env={**os.environ, "PYTHONUNBUFFERED": "1"},
+    )
+    if proc.returncode != 0:
+        tail = (proc.stderr or proc.stdout or "")[-6000:]
+        log.error("attack validation subprocess failed rc=%s: %s", proc.returncode, tail)
+        raise HTTPException(status_code=500, detail=tail or "ML subprocess failed")
+
+    try:
+        data = json.loads(proc.stdout.strip() or "{}")
+    except json.JSONDecodeError as exc:
+        log.error("Bad JSON from ML: %s", proc.stdout[:2000])
+        raise HTTPException(status_code=500, detail="Invalid JSON from ML subprocess") from exc
+
+    if not data.get("ok"):
+        raise HTTPException(
+            status_code=422,
+            detail=data.get("error", "ML script reported failure"),
+        )
+    return data["series"]
+
+
+@router.post("/validation-series")
+async def attack_validation_series(req: AttackValidationSeriesRequest) -> dict:
+    """
+    Run the offline streaming attack simulation used by ``validate_attack_injection.py``
+    for a single attack type and return numeric series for the three-panel UI.
+    """
+    return await asyncio.to_thread(_run_attack_validation_subprocess, req)

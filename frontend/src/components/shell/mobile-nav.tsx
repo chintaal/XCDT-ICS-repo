@@ -10,12 +10,14 @@ import {
   LayoutDashboard,
   Settings,
   Shield,
+  TestTube2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/",             icon: Activity,     label: "Live"      },
   { href: "/replay-dashboard", icon: LayoutDashboard, label: "Replay" },
+  { href: "/attack-strip",   icon: TestTube2,    label: "Strip"   },
   { href: "/incidents",    icon: AlertOctagon, label: "Incidents" },
   { href: "/sensor-graph", icon: GitBranch,    label: "Graph"     },
   { href: "/datasets",     icon: Database,     label: "Datasets"  },

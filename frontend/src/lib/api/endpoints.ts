@@ -7,6 +7,8 @@ import { api } from "./client";
 import type {
   AttackInjectRequest,
   AttackTypeInfo,
+  AttackValidationSeries,
+  AttackValidationSeriesRequest,
   DatasetInfo,
   HealthResponse,
   IncidentFeedbackRequest,
@@ -68,5 +70,10 @@ export const apiEndpoints = {
       api<{ ok: boolean }>("/api/attacks/clear", { method: "DELETE" }),
     status: () =>
       api<Record<string, unknown>>("/api/attacks/status"),
+    validationSeries: (req: AttackValidationSeriesRequest) =>
+      api<AttackValidationSeries>("/api/attacks/validation-series", {
+        method: "POST",
+        body: req,
+      }),
   },
 };
