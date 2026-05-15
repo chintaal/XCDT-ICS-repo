@@ -8,6 +8,7 @@ import {
   AlertOctagon,
   Database,
   GitBranch,
+  LayoutDashboard,
   Play,
   Search,
   Settings,
@@ -86,6 +87,7 @@ function PaletteOverlay({ onClose, router, stopMut, startSwatMut }: PaletteOverl
 
   const allCommands: Cmd[] = [
     { id: "nav-live",      group: "Navigate", label: "Live Operations",  icon: Activity,     run: () => router.push("/") },
+    { id: "nav-replay",    group: "Navigate", label: "Methodology replay", icon: LayoutDashboard, run: () => router.push("/replay-dashboard") },
     { id: "nav-incidents", group: "Navigate", label: "Incidents",        icon: AlertOctagon, run: () => router.push("/incidents") },
     { id: "nav-graph",     group: "Navigate", label: "Sensor Graph",     icon: GitBranch,    run: () => router.push("/sensor-graph") },
     { id: "nav-datasets",  group: "Navigate", label: "Datasets",         icon: Database,     run: () => router.push("/datasets") },

@@ -7,6 +7,7 @@ import {
   AlertOctagon,
   Database,
   GitBranch,
+  LayoutDashboard,
   Settings,
   Shield,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/",             icon: Activity,     label: "Live"      },
+  { href: "/replay-dashboard", icon: LayoutDashboard, label: "Replay" },
   { href: "/incidents",    icon: AlertOctagon, label: "Incidents" },
   { href: "/sensor-graph", icon: GitBranch,    label: "Graph"     },
   { href: "/datasets",     icon: Database,     label: "Datasets"  },

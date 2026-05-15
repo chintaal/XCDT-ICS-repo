@@ -8,6 +8,8 @@ import { create } from "zustand";
 import type { InferenceRecord } from "@/lib/api/types";
 
 const HISTORY_CAPACITY = 600; // ~30s @ 50ms; ~5min @ 500ms
+/** Full records for methodology replay dashboard (matches Streamlit tail up to 5k). */
+export const RECORD_HISTORY_CAPACITY = 5000;
 
 export type ConnectionStatus = "connecting" | "live" | "offline" | "stale";
 export type SystemState = "normal" | "elevated" | "alert";
@@ -24,6 +26,8 @@ interface SystemStore {
   // Live stream
   current: InferenceRecord | null;
   history: ScorePoint[];        // ring buffer, oldest first
+  /** Full engine records for replay / XAI charts (tail-capped). */
+  recordHistory: InferenceRecord[];
   systemState: SystemState;
 
   // Connection
@@ -59,6 +63,7 @@ function deriveSystemState(score: number, threshold: number, isAlert: boolean): 
 export const useSystemStore = create<SystemStore>((set) => ({
   current: null,
   history: [],
+  recordHistory: [],
   systemState: "normal",
 
   connection: "connecting",
@@ -83,9 +88,11 @@ export const useSystemStore = create<SystemStore>((set) => ({
     const next = state.history.length >= HISTORY_CAPACITY
       ? [...state.history.slice(1), point]
       : [...state.history, point];
+    const nextFull = [...state.recordHistory, record].slice(-RECORD_HISTORY_CAPACITY);
     return {
       current: record,
       history: next,
+      recordHistory: nextFull,
       systemState: deriveSystemState(record.anomaly_score, record.threshold, record.is_alert),
       lastMessageAt: tNow,
       connection: "live",
@@ -98,5 +105,5 @@ export const useSystemStore = create<SystemStore>((set) => ({
   setSelectedSensor: (id) => set({ selectedSensor: id }),
   toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
   toggleSidebar: () => set((s) => ({ sidebarCollapsed: !s.sidebarCollapsed })),
-  resetHistory: () => set({ history: [], current: null }),
+  resetHistory: () => set({ history: [], current: null, recordHistory: [] }),
 }));

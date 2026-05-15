@@ -8,6 +8,7 @@ import {
   AlertOctagon,
   Database,
   GitBranch,
+  LayoutDashboard,
   Settings,
   Shield,
   Sparkles,
@@ -18,6 +19,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/",             label: "Live Operations", icon: Activity,     hint: "Realtime detection" },
+  { href: "/replay-dashboard", label: "Methodology replay", icon: LayoutDashboard, hint: "Streamlit parity · XAI" },
   { href: "/incidents",    label: "Incidents",       icon: AlertOctagon, hint: "Forensic intelligence" },
   { href: "/sensor-graph", label: "Sensor Graph",    icon: GitBranch,    hint: "Process topology" },
   { href: "/datasets",     label: "Datasets",        icon: Database,     hint: "Models & assets" },
